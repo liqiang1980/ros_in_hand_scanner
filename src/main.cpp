@@ -47,10 +47,13 @@ main (int argc, char** argv)
 {
 
   //added ROS main stuff
-  ros::init(argc, argv, "in_hand_scanner");
+  ros::init(argc, argv, "dexman_scanner");
+  ros::NodeHandle nh("~");
+  bool is_colored;
+  nh.getParam("/dexman_scanner/is_colored",is_colored);
 
   QApplication app (argc, argv);
-  pcl::ihs::MainWindow mw;
+  pcl::ihs::MainWindow mw(is_colored);
   mw.show ();
   return (app.exec ());
 }

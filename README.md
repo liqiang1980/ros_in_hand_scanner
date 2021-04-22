@@ -3,6 +3,9 @@
 ## Description
 The ROS In-hand scanner provides a 3D Scanning application based on the PCL In-hand scanner for small objects by Martin Sälzle and the PCL developers.
 
+Recently is upated by Qiang Li for adapting the package 
+used with xyzrgba and xyz point cloud format 
+
 Original PCL Documentation can be found here:
 
 http://pointclouds.org/documentation/tutorials/in_hand_scanner.php
@@ -48,8 +51,12 @@ Some quick infos on how to use.
 
 Start the ROS In-hand scanner:
 ```
+original startup version
 roscore
 rosrun ros_in_hand_scanner ros_in_hand_scanner_node
+
+updated startup version
+roslaunch ros_in_hand_scanner interact_gui_startup.launch
 ```
 
 Due to performance issues, a realtime registration is very slow with down to < 0.1 fps.

@@ -130,7 +130,7 @@ namespace pcl
         } FileType;
 
         /** \brief Constructor. */
-        explicit InHandScanner (Base* parent=0);
+        explicit InHandScanner (bool, Base* parent=0);
 
         /** \brief Destructor. */
         ~InHandScanner ();
@@ -224,6 +224,9 @@ namespace pcl
 
         pcl::PCLPointCloud2 pcl_pc2;
         pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr_xyzrgba;
+
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
+        bool is_colored;
 
         /** \brief Helper object for the computation thread. Please have a look at the documentation of calcFPS. */
         class ComputationFPS : public Base::FPS

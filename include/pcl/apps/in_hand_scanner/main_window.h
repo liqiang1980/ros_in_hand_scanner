@@ -80,7 +80,9 @@ namespace pcl
         typedef pcl::ihs::HelpWindow       HelpWindow;
         typedef InHandScanner::RunningMode RunningMode;
 
-        explicit MainWindow (QWidget* parent = 0);
+        bool is_colored;
+
+        explicit MainWindow (bool, QWidget* parent = 0);
         ~MainWindow ();
 
       public slots:

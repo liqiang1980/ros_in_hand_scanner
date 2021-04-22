@@ -43,6 +43,7 @@
 #include <pcl/common/point_tests.h>
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/apps/in_hand_scanner/boost.h>
+#include <chrono>
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -82,6 +83,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                                         CloudXYZRGBNormalPtr&       cloud_out,
                                         CloudXYZRGBNormalPtr&       cloud_discarded) const
 {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   if (!cloud_in)
   {
     std::cerr << "ERROR in input_data_processing.cpp: Input cloud is invalid.\n";
@@ -99,10 +101,13 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
   const unsigned int width  = cloud_in->width;
   const unsigned int height = cloud_in->height;
 
+  std::cout<<"width and height of pc are "<<width<<","<<height<<std::endl;
+
   // Calculate the normals
   CloudNormalsPtr cloud_normals (new CloudNormals ());
   normal_estimation_->setInputCloud (cloud_in);
   normal_estimation_->compute (*cloud_normals);
+
 
   // Get the XYZ and HSV masks.
   MatrixXb xyz_mask (height, width);
@@ -149,6 +154,10 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
   this->erode  (xyz_mask, size_erode_);
   if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
   else              hsv_mask.setZero ();
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time difference (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) /1000000.0  <<std::endl;
+
 
   // Copy the normals into the clouds.
   cloud_out->reserve (cloud_in->size ());

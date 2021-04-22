@@ -40,6 +40,7 @@
 
 #include <pcl/apps/in_hand_scanner/in_hand_scanner.h>
 
+
 #include <QApplication>
 #include <QtCore>
 #include <QKeyEvent>
@@ -75,8 +76,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pcl::ihs::InHandScanner::InHandScanner (Base* parent)
-  : Base                   (parent),
+pcl::ihs::InHandScanner::InHandScanner (bool is_c, Base* parent)
+  : is_colored             (is_c),
+    Base                   (parent),
     mutex_                 (),
     computation_fps_       (),
     visualization_fps_     (),
@@ -109,6 +111,7 @@ pcl::ihs::InHandScanner::InHandScanner (Base* parent)
   Base::setPivot (Eigen::Vector3d ((x_min + x_max) / 2., (y_min + y_max) / 2., (z_min + z_max) / 2.));
 
   cloud_ptr_xyzrgba.reset(new pcl::PointCloud<pcl::PointXYZRGBA>());
+  cloud_ptr_xyz.reset(new pcl::PointCloud<pcl::PointXYZ>());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +143,7 @@ pcl::ihs::InHandScanner::showUnprocessedData ()
 
   std::cerr << "Showing the unprocessed input data.\n";
   Base::setDrawBox (false);
-  Base::setColoring (Base::COL_RGB);
+  Base::setColoring (Base::COL_ONE_COLOR);
 
   running_mode_ = RM_UNPROCESSED;
   emit runningModeChanged (running_mode_);
@@ -156,7 +159,7 @@ pcl::ihs::InHandScanner::showProcessedData ()
 
   std::cerr << "Showing the processed input data.\n";
   Base::setDrawBox (true);
-  Base::setColoring (Base::COL_RGB);
+  Base::setColoring (Base::COL_ONE_COLOR);
 
   running_mode_ = RM_PROCESSED;
   emit runningModeChanged (running_mode_);
@@ -500,8 +503,13 @@ void pcl::ihs::InHandScanner::grab_pc(const sensor_msgs::PointCloud2::ConstPtr &
 
 
     pcl_conversions::toPCL(*msg,pcl_pc2);
-    pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyzrgba);
-
+    if(is_colored == false){
+        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyz);
+        pcl::copyPointCloud(*cloud_ptr_xyz,*cloud_ptr_xyzrgba);
+    }
+    else{
+        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyzrgba);
+    }
     pcl::ihs::InHandScanner::newDataCallback(cloud_ptr_xyzrgba);
      
 }
