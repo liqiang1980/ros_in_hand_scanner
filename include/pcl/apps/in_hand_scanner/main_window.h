@@ -81,8 +81,9 @@ namespace pcl
         typedef InHandScanner::RunningMode RunningMode;
 
         bool is_colored;
+        std::string topic_name;
 
-        explicit MainWindow (bool, QWidget* parent = 0);
+        explicit MainWindow (bool, std::string t_name, QWidget* parent = 0);
         ~MainWindow ();
 
       public slots:

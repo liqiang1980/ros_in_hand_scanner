@@ -76,8 +76,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pcl::ihs::InHandScanner::InHandScanner (bool is_c, Base* parent)
+pcl::ihs::InHandScanner::InHandScanner (bool is_c, std::string t_name, Base* parent)
   : is_colored             (is_c),
+    topic_name             (t_name),
     Base                   (parent),
     mutex_                 (),
     computation_fps_       (),
@@ -112,6 +113,7 @@ pcl::ihs::InHandScanner::InHandScanner (bool is_c, Base* parent)
 
   cloud_ptr_xyzrgba.reset(new pcl::PointCloud<pcl::PointXYZRGBA>());
   cloud_ptr_xyz.reset(new pcl::PointCloud<pcl::PointXYZ>());
+  cloud_ptr_xyzrgb.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -143,7 +145,10 @@ pcl::ihs::InHandScanner::showUnprocessedData ()
 
   std::cerr << "Showing the unprocessed input data.\n";
   Base::setDrawBox (false);
-  Base::setColoring (Base::COL_ONE_COLOR);
+  if(is_colored == false)
+      Base::setColoring (Base::COL_ONE_COLOR);
+  else
+      Base::setColoring (Base::COL_RGB);
 
   running_mode_ = RM_UNPROCESSED;
   emit runningModeChanged (running_mode_);
@@ -159,7 +164,10 @@ pcl::ihs::InHandScanner::showProcessedData ()
 
   std::cerr << "Showing the processed input data.\n";
   Base::setDrawBox (true);
-  Base::setColoring (Base::COL_ONE_COLOR);
+  if(is_colored == false)
+      Base::setColoring (Base::COL_ONE_COLOR);
+  else
+      Base::setColoring (Base::COL_RGB);
 
   running_mode_ = RM_PROCESSED;
   emit runningModeChanged (running_mode_);
@@ -326,6 +334,8 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
   }
   else if (running_mode_ >= RM_PROCESSED)
   {
+      //cloud_discarded is hand
+      //cloud_data is object
     if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded))
       return;
   }
@@ -508,7 +518,8 @@ void pcl::ihs::InHandScanner::grab_pc(const sensor_msgs::PointCloud2::ConstPtr &
         pcl::copyPointCloud(*cloud_ptr_xyz,*cloud_ptr_xyzrgba);
     }
     else{
-        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyzrgba);
+        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyzrgb);
+        pcl::copyPointCloud(*cloud_ptr_xyzrgb,*cloud_ptr_xyzrgba);
     }
     pcl::ihs::InHandScanner::newDataCallback(cloud_ptr_xyzrgba);
      
@@ -526,7 +537,7 @@ pcl::ihs::InHandScanner::startGrabberImpl ()
 
   ros::NodeHandle n;
 
-  ros::Subscriber sub = n.subscribe("/camera/depth_registered/points", 50, &pcl::ihs::InHandScanner::grab_pc, this);
+  ros::Subscriber sub = n.subscribe(topic_name, 50, &pcl::ihs::InHandScanner::grab_pc, this);
   starting_grabber_ = false;
   ros::spin();
 

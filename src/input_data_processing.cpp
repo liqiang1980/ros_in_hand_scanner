@@ -54,8 +54,8 @@ pcl::ihs::InputDataProcessing::InputDataProcessing ()
     x_max_ ( 30.f),
     y_min_ (-30.f),
     y_max_ ( 20.f),
-    z_min_ ( 25.f),
-    z_max_ ( 75.f),
+    z_min_ ( 80.f),
+    z_max_ ( 130.f),
 
     h_min_ (210.f),
     h_max_ (270.f),
@@ -83,7 +83,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                                         CloudXYZRGBNormalPtr&       cloud_out,
                                         CloudXYZRGBNormalPtr&       cloud_discarded) const
 {
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   if (!cloud_in)
   {
     std::cerr << "ERROR in input_data_processing.cpp: Input cloud is invalid.\n";
@@ -101,12 +101,13 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
   const unsigned int width  = cloud_in->width;
   const unsigned int height = cloud_in->height;
 
-  std::cout<<"width and height of pc are "<<width<<","<<height<<std::endl;
 
   // Calculate the normals
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
   CloudNormalsPtr cloud_normals (new CloudNormals ());
   normal_estimation_->setInputCloud (cloud_in);
   normal_estimation_->compute (*cloud_normals);
+  std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
 
 
   // Get the XYZ and HSV masks.
@@ -131,6 +132,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 
       xyz_mask (r, c) = hsv_mask (r, c) = false;
 
+
       if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
           xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
           xyzrgb.y  >= y_min             && xyzrgb.y  <= y_max                    &&
@@ -138,26 +140,31 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
       {
         xyz_mask (r, c) = true;
 
-        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
-        if (h >= h_min_ && h <= h_max_ && s >= s_min_ && s <= s_max_ && v >= v_min_ && v <= v_max_)
-        {
-          if (!hsv_inverted_) hsv_mask (r, c) = true;
-        }
-        else
-        {
-          if (hsv_inverted_) hsv_mask (r, c) = true;
-        }
+        //color as criteria, set mask is true if the point is in the range of hsv
+//        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
+//        if (h >= h_min_ && h <= h_max_ && s >= s_min_ && s <= s_max_ && v >= v_min_ && v <= v_max_)
+//        {
+//          if (!hsv_inverted_) hsv_mask (r, c) = true;
+//        }
+//        else
+//        {
+//          if (hsv_inverted_) hsv_mask (r, c) = true;
+//        }
+
+        //only object in the scene
+        hsv_mask (r, c) = true;
       }
     }
   }
+  std::chrono::steady_clock::time_point end2 = std::chrono::steady_clock::now();
+  std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
+  std::cout << "Time difference2 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end2 - begin).count()) /1000000.0  <<std::endl;
 
   this->erode  (xyz_mask, size_erode_);
+  std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
+  std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
   if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
   else              hsv_mask.setZero ();
-
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cout << "Time difference (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()) /1000000.0  <<std::endl;
-
 
   // Copy the normals into the clouds.
   cloud_out->reserve (cloud_in->size ());
@@ -183,6 +190,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
         // m -> cm
         xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
 
+        //my current understanding: mask == true is to remove hand
         if (hsv_mask (r, c))
         {
           pt_discarded.getVector4fMap ()       = xyzrgb.getVector4fMap ();

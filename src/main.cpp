@@ -50,10 +50,13 @@ main (int argc, char** argv)
   ros::init(argc, argv, "dexman_scanner");
   ros::NodeHandle nh("~");
   bool is_colored;
+  std::string t_name;
   nh.getParam("/dexman_scanner/is_colored",is_colored);
+  nh.getParam("/dexman_scanner/topic_name",t_name);
+  std::cout<<"topic_name is "<<t_name<<std::endl;
 
   QApplication app (argc, argv);
-  pcl::ihs::MainWindow mw(is_colored);
+  pcl::ihs::MainWindow mw(is_colored, t_name);
   mw.show ();
   return (app.exec ());
 }

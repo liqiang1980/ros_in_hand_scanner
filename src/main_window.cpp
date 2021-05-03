@@ -58,13 +58,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
-pcl::ihs::MainWindow::MainWindow (bool is_c, QWidget* parent)
+pcl::ihs::MainWindow::MainWindow (bool is_c, std::string t_name, QWidget* parent)
   : is_colored   (is_c),
+    topic_name   (t_name),
     QMainWindow  (parent),
     ui_          (new Ui::MainWindow ()),
     help_window_ (new HelpWindow (this))
 {
-  ihs_ = new InHandScanner (is_colored);
+  ihs_ = new InHandScanner (is_colored,t_name);
   ui_->setupUi (this);
 
   QWidget* spacer = new QWidget ();

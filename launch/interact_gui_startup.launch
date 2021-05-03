@@ -4,6 +4,7 @@
 
 <node pkg="ros_in_hand_scanner" type="ros_in_hand_scanner_node" name="dexman_scanner" output="screen" >
 <param name="is_colored" value="false" />
+<param name="topic_name" value="/camera/depth_registered/points" />
 </node>
 
 </launch>
