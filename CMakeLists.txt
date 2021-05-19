@@ -9,10 +9,13 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-find_package(PCL 1.7 REQUIRED)
+## find_package(PCL REQUIRED)
+find_package(PCL 1.9.0 EXACT REQUIRED PATHS /homes/qli/SWLib/share/pcl-1.9)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
+message(status "include path of pcl currently is *****************************************************************************8 ${PCL_INCLUDE_DIRS} ")
+message(status "lib path of pcl currently is *****************************************************************************8 ${PCL_LIBRARY_DIRS} ")
 
 find_package(Qt4 REQUIRED COMPONENTS 
   QtGui 
