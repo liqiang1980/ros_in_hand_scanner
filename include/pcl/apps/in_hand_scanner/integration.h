@@ -93,7 +93,8 @@ namespace pcl
           */
         bool
         reconstructMesh (const CloudXYZRGBNormalConstPtr& cloud_data,
-                         MeshPtr&                         mesh_model) const;
+                         MeshPtr&                         mesh_model,
+                         bool with_gpu) const;
 
         /** \brief Merge the organized cloud into the mesh.
           * \param[in] cloud_data Input cloud. Must be organized.

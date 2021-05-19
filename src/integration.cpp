@@ -65,7 +65,8 @@ pcl::ihs::Integration::Integration ()
 
 bool
 pcl::ihs::Integration::reconstructMesh (const CloudXYZRGBNormalConstPtr& cloud_data,
-                                        MeshPtr&                         mesh_model) const
+                                        MeshPtr&                         mesh_model,
+                                        bool with_gpu) const
 {
   if (!cloud_data)
   {

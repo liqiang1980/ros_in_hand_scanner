@@ -156,7 +156,8 @@ bool
 pcl::ihs::ICP::findTransformation (const MeshConstPtr&              mesh_model,
                                    const CloudXYZRGBNormalConstPtr& cloud_data,
                                    const Eigen::Matrix4f&           T_init,
-                                   Eigen::Matrix4f&                 T_final)
+                                   Eigen::Matrix4f&                 T_final,
+                                   bool with_gpu)
 {
   // Check the input
   // TODO: Double check the minimum number of points necessary for icp

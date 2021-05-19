@@ -95,7 +95,8 @@ namespace pcl
         bool
         segment (const CloudXYZRGBAConstPtr& cloud_in,
                  CloudXYZRGBNormalPtr&       cloud_out,
-                 CloudXYZRGBNormalPtr&       cloud_discarded) const;
+                 CloudXYZRGBNormalPtr&       cloud_discarded,
+                 bool with_gpu) const;
 
         /** \brief Calculate the normals of the input cloud.
           * \param[in] cloud_in The input cloud.
@@ -105,7 +106,8 @@ namespace pcl
           */
         bool
         calculateNormals (const CloudXYZRGBAConstPtr& cloud_in,
-                          CloudXYZRGBNormalPtr&       cloud_out) const;
+                          CloudXYZRGBNormalPtr&       cloud_out,
+                          bool with_gpu) const;
 
         /** @{ */
         /** \brief Points outside of X - Y - Z - min / max are discarded. The unit is cm. The min values must be smaller than the max values. */
