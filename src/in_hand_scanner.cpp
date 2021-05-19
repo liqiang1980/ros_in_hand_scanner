@@ -329,14 +329,14 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
   }
   else if (running_mode_ == RM_UNPROCESSED)
   {
-    if (!input_data_processing_->calculateNormals (cloud_in, cloud_data))
+    if (!input_data_processing_->calculateNormals (cloud_in, cloud_data,false))
       return;
   }
   else if (running_mode_ >= RM_PROCESSED)
   {
       //cloud_discarded is hand
       //cloud_data is object
-    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded))
+    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded,false))
       return;
   }
 
@@ -355,7 +355,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
       transformation_ = Eigen::Matrix4f::Identity ();
 
       sw.reset ();
-      integration_->reconstructMesh (cloud_data, mesh_model_);
+      integration_->reconstructMesh (cloud_data, mesh_model_,false);
       std::cerr << "Integration:\n"
                 << "  - time reconstruct mesh          : "
                 << std::setw (8) << std::right << sw.getTime () << " ms\n";
@@ -366,7 +366,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
     else
     {
       Eigen::Matrix4f T_final = Eigen::Matrix4f::Identity ();
-      if (icp_->findTransformation (mesh_model_, cloud_data, transformation_, T_final))
+      if (icp_->findTransformation (mesh_model_, cloud_data, transformation_, T_final, false))
       {
         transformation_ = T_final;
 

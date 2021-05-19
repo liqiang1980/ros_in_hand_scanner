@@ -36,6 +36,7 @@ SET ( SRCS
     src/mesh_processing.cpp
     src/opengl_viewer.cpp
     src/visibility_confidence.cpp
+    src/normalestimation_withgpu.cpp
 )
 
 
