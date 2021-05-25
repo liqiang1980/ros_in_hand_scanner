@@ -1,8 +1,8 @@
 #ifndef NORMALESTIMATION_WITHGPU_H
 #define NORMALESTIMATION_WITHGPU_H
 
-#include "opencv2/opencv.hpp"
-#include "opencv2/gpu/gpu.hpp"
+// #include "opencv2/opencv.hpp"
+// #include "opencv2/gpu/gpu.hpp"
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
