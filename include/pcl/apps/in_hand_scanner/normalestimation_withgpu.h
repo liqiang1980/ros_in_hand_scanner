@@ -76,38 +76,38 @@ class NormalEstimation_WITHGPU
         template <template <typename> class Storage> void
         file_cloud_cb (const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& cloud)
         {
-           pcl::PointCloud<pcl::PointXYZRGB>::Ptr output (new pcl::PointCloud<pcl::PointXYZRGB>);
-           PointCloudAOS<Host> data_host;
-           data_host.points.resize (cloud->points.size());
-           for (size_t i = 0; i < cloud->points.size (); ++i)
-           {
-             pcl::cuda::PointXYZRGB pt;
-             pt.x = cloud->points[i].x;
-             pt.y = cloud->points[i].y;
-             pt.z = cloud->points[i].z;
-             // Pack RGB into a float
-             pt.rgb = *(float*)(&cloud->points[i].rgb);
-             data_host.points[i] = pt;
-           }
-           data_host.width = cloud->width;
-           data_host.height = cloud->height;
-           data_host.is_dense = cloud->is_dense;
-           typename PointCloudAOS<Storage>::Ptr data = toStorage<Host, Storage> (data_host);
-
-           // we got a cloud in device..
-
-           boost::shared_ptr<typename Storage<float4>::type> normals;
-           float focallength = 580/2.0;
-           {
-             ScopeTimeCPU time ("Normal Estimation");
-             normals = computePointNormals<Storage, typename PointIterator<Storage,pcl::PointXYZRGB>::type > (data->points.begin (), data->points.end (), focallength, data, 0.05, 30);
-           }
-           go_on = false;
-
-           boost::mutex::scoped_lock l(m_mutex);
-           normal_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
-           toPCL (*data, *normals, *normal_cloud);
-           new_cloud = true;
+//            pcl::PointCloud<pcl::PointXYZRGB>::Ptr output (new pcl::PointCloud<pcl::PointXYZRGB>);
+//            PointCloudAOS<Host> data_host;
+//            data_host.points.resize (cloud->points.size());
+//            for (size_t i = 0; i < cloud->points.size (); ++i)
+//            {
+//              pcl::cuda::PointXYZRGB pt;
+//              pt.x = cloud->points[i].x;
+//              pt.y = cloud->points[i].y;
+//              pt.z = cloud->points[i].z;
+//              // Pack RGB into a float
+//              pt.rgb = *(float*)(&cloud->points[i].rgb);
+//              data_host.points[i] = pt;
+//            }
+//            data_host.width = cloud->width;
+//            data_host.height = cloud->height;
+//            data_host.is_dense = cloud->is_dense;
+//            typename PointCloudAOS<Storage>::Ptr data = toStorage<Host, Storage> (data_host);
+// 
+//            // we got a cloud in device..
+// 
+//            boost::shared_ptr<typename Storage<float4>::type> normals;
+//            float focallength = 580/2.0;
+//            {
+//              ScopeTimeCPU time ("Normal Estimation");
+//              normals = computePointNormals<Storage, typename PointIterator<Storage,pcl::PointXYZRGB>::type > (data->points.begin (), data->points.end (), focallength, data, 0.05, 30);
+//            }
+//            go_on = false;
+// 
+//            boost::mutex::scoped_lock l(m_mutex);
+//            normal_cloud.reset (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+//            toPCL (*data, *normals, *normal_cloud);
+//            new_cloud = true;
         }
 
 //         template <template <typename> class Storage> void

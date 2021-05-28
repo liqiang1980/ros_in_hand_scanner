@@ -226,7 +226,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
       return (true);
   }
   else{
-
+    ne_withgpu.get_nv_gpu(cloud_in);
   }
 }
 
