@@ -17,6 +17,8 @@ add_definitions(${PCL_DEFINITIONS})
 message(status "include path of pcl currently is *****************************************************************************8 ${PCL_INCLUDE_DIRS} ")
 message(status "lib path of pcl currently is *****************************************************************************8 ${PCL_LIBRARY_DIRS} ")
 
+
+
 find_package(Qt4 REQUIRED COMPONENTS 
   QtGui 
   QtOpenGL 
@@ -65,6 +67,7 @@ QT4_AUTOMOC ( ${SRCS} )
 
 
 find_package(OpenGL REQUIRED)
+# include_directories("/vol/cuda/10.0/include")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -167,6 +170,7 @@ catkin_package(
 include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  "/vol/cuda/10.0/include"
 )
 
 ## Declare a C++ library
@@ -205,7 +209,7 @@ add_executable(ros_in_hand_scanner_node
 
 ## Specify libraries to link a library or executable target against
  target_link_libraries(ros_in_hand_scanner_node
-   ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES}
+   ${catkin_LIBRARIES} ${OPENGL_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} "/vol/cuda/10.0/lib64/libcudart.so"
 )
 
 #############

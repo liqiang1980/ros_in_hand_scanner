@@ -1,15 +1,11 @@
 #include "pcl/apps/in_hand_scanner/normalestimation_withgpu.h"
 
-NormalEstimation_WITHGPU::NormalEstimation_WITHGPU()
-{
-
-}
 
 void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr_xyzrgba){
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
     pcl::copyPointCloud(*cloud_ptr_xyzrgba,*cloud_ptr_xyz);
     pcl::gpu::NormalEstimation::PointCloud cloud_device;
-    cloud_device.upload(cloud_in->points);
+    cloud_device.upload(cloud_ptr_xyz->points);
 
     pcl::gpu::NormalEstimation ne_device;
     ne_device.setInputCloud(cloud_device);
@@ -27,7 +23,6 @@ void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGB
 
     for(size_t i = 0; i < downloaded.size(); ++i)
     {
-        pcl::Normal n = normals->points[i];
 
         pcl::PointXYZ xyz = downloaded[i];
         float curvature = xyz.data[3];

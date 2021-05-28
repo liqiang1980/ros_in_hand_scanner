@@ -41,6 +41,7 @@ catkin_make
 
 ## Topics
 ```
+
 Subscriber Topic: camera/depth_registered/points
 Message Type: sensor_msgs/PointCloud2
 Description: organized point cloud
