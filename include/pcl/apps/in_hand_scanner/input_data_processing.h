@@ -45,7 +45,6 @@
 #include <pcl/apps/in_hand_scanner/eigen.h>
 #include <pcl/apps/in_hand_scanner/common_types.h>
 #include <pcl/apps/in_hand_scanner/utils.h>
-#include <pcl/apps/in_hand_scanner/normalestimation_withgpu.h>
 
 ////////////////////////////////////////////////////////////////////////////////
 // Forward declarations
@@ -219,7 +218,6 @@ namespace pcl
         ////////////////////////////////////////////////////////////////////////
 
         NormalEstimationPtr normal_estimation_;
-        NormalEstimation_WITHGPU ne_withgpu;
 
         float x_min_;
         float x_max_;
