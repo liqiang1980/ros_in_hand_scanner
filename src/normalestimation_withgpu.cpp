@@ -3,7 +3,7 @@
 
 void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr cloud_ptr_xyzrgba){
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
-    pcl::copyPointCloud(*cloud_ptr_xyzrgba,*cloud_ptr_xyz);
+    customized_copyPointCloud(cloud_ptr_xyzrgba,cloud_ptr_xyz);
     pcl::gpu::NormalEstimation::PointCloud cloud_device;
     cloud_device.upload(cloud_ptr_xyz->points);
 
@@ -35,4 +35,22 @@ void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGB
 //        float abs_error_curv = 0.01f;
 //        ASSERT_NEAR(n.curvature, curvature, abs_error_curv);
     }
+}
+
+void NormalEstimation_WITHGPU::customized_copyPointCloud(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud_in,pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud_out){
+    // Allocate enough space and copy the basics
+  cloud_out.header   = cloud_in.header;
+  cloud_out.width    = cloud_in.width;
+  cloud_out.height   = cloud_in.height;
+  cloud_out.is_dense = cloud_in.is_dense;
+  cloud_out.sensor_orientation_ = cloud_in.sensor_orientation_;
+  cloud_out.sensor_origin_ = cloud_in.sensor_origin_;
+  cloud_out.points.resize (cloud_in.points.size ());
+
+  if (cloud_in.points.size () == 0)
+    return;
+
+    // Iterate over each point
+  for (size_t i = 0; i < cloud_in.points.size (); ++i)
+    pcl::copyPoint (cloud_in.points[i], cloud_out.points[i]);
 }
