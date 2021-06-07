@@ -1,7 +1,7 @@
 #include "pcl/apps/in_hand_scanner/normalestimation_withgpu.h"
 
 
-void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr cloud_ptr_xyzrgba){
+void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud_ptr_xyzrgba){
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
     customized_copyPointCloud(cloud_ptr_xyzrgba,cloud_ptr_xyz);
     pcl::gpu::NormalEstimation::PointCloud cloud_device;
