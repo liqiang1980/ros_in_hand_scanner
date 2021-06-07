@@ -37,7 +37,7 @@ class NormalEstimation_WITHGPU
     NormalEstimation_WITHGPU(){}
   public:
     void get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud_xyzrgba) const;
-    void customized_copyPointCloud(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&,pcl::PointCloud<pcl::PointXYZ>::Ptr&);
+    void customized_copyPointCloud(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&,pcl::PointCloud<pcl::PointXYZ>::Ptr&) const;
 };
 
 
