@@ -293,6 +293,8 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
           {
               const PointXYZRGBA& xyzrgb = (*cloud_in)      [r*width + c];
               const Normal&       normal = (*cloud_normals) [r*width + c];
+              xyz_mask (r, c) = false;
+              hsv_mask (r, c) = false;
 
               if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
                       xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
@@ -300,6 +302,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                       xyzrgb.z  >= z_min             && xyzrgb.z  <= z_max)
               {
                   xyz_mask (r, c) = true;
+
 
                   //color as criteria, set mask is true if the point is in the range of hsv
                   //        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
@@ -313,12 +316,12 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                   //        }
 
                   //only object in the scene
-                  hsv_mask (r, c) = true;
+//                  hsv_mask (r, c) = true;
               }
               else{
-                  xyz_mask (r, c) = false;
-                  hsv_mask (r, c) = false;
+
               }
+
           }
       }
 
