@@ -287,12 +287,24 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 
 
       float h, s, v;
+
+      // Copy the normals into the clouds.
+      cloud_out->reserve (cloud_in->size ());
+      cloud_discarded->reserve (cloud_in->size ());
+      pcl::PointXYZRGBNormal pt_out, pt_discarded;
+      pt_discarded.r = 50;
+      pt_discarded.g = 50;
+      pt_discarded.b = 230;
+
+      PointXYZRGBA xyzrgb;
+      Normal       normal;
+
       for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
       {
           for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
           {
-              const PointXYZRGBA& xyzrgb = (*cloud_in)      [r*width + c];
-              const Normal&       normal = (*cloud_normals) [r*width + c];
+              PointXYZRGBA xyzrgb = (*cloud_in)      [r*width + c];
+              Normal       normal = (*cloud_normals) [r*width + c];
 
               if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
                       xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
@@ -314,41 +326,6 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 
                   //only object in the scene
                   hsv_mask (r, c) = true;
-              }
-              else{
-                  xyz_mask (r, c) = false;
-                  hsv_mask (r, c) = false;
-              }
-          }
-      }
-
-
-//      this->erode  (xyz_mask, size_erode_);
-//      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
-//      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
-//      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
-//      else              hsv_mask.setZero ();
-
-      // Copy the normals into the clouds.
-      cloud_out->reserve (cloud_in->size ());
-      cloud_discarded->reserve (cloud_in->size ());
-
-      pcl::PointXYZRGBNormal pt_out, pt_discarded;
-      pt_discarded.r = 50;
-      pt_discarded.g = 50;
-      pt_discarded.b = 230;
-
-      PointXYZRGBA xyzrgb;
-      Normal       normal;
-
-      for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
-      {
-          for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
-          {
-              if (xyz_mask (r, c))
-              {
-                  xyzrgb = (*cloud_in)      [r*width + c];
-                  normal = (*cloud_normals) [r*width + c];
 
                   // m -> cm
                   xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
@@ -361,25 +338,26 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 
                       pt_out.x = std::numeric_limits <float>::quiet_NaN ();
                   }
-                  else
-                  {
-                      pt_out.getVector4fMap ()       = xyzrgb.getVector4fMap ();
-                      pt_out.getNormalVector4fMap () = normal.getNormalVector4fMap ();
-                      pt_out.rgba                    = xyzrgb.rgba;
-
-                      pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
-                  }
               }
-              else
-              {
+              else{
+                  xyz_mask (r, c) = false;
+                  hsv_mask (r, c) = false;
                   pt_out.x       = std::numeric_limits <float>::quiet_NaN ();
                   pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
               }
-
               cloud_out->push_back       (pt_out);
               cloud_discarded->push_back (pt_discarded);
           }
       }
+
+
+//      this->erode  (xyz_mask, size_erode_);
+//      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
+//      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
+//      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
+//      else              hsv_mask.setZero ();
+
+
       std::chrono::steady_clock::time_point end4 = std::chrono::steady_clock::now();
       std::cout << "Time difference4 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end4 - begin).count()) /1000000.0  <<std::endl;
 
