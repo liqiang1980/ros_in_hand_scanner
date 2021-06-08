@@ -76,6 +76,166 @@ pcl::ihs::InputDataProcessing::InputDataProcessing ()
   normal_estimation_->setNormalSmoothingSize (10.0f);
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+
+//bool
+//pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
+//                                        CloudXYZRGBNormalPtr&       cloud_out,
+//                                        CloudXYZRGBNormalPtr&       cloud_discarded,
+//                                        bool with_gpu) const
+//{
+
+//  if (!cloud_in)
+//  {
+//    std::cerr << "ERROR in input_data_processing.cpp: Input cloud is invalid.\n";
+//    return (false);
+//  }
+//  if (!cloud_in->isOrganized ())
+//  {
+//    std::cerr << "ERROR in input_data_processing.cpp: Input cloud must be organized.\n";
+//    return (false);
+//  }
+//  if (!cloud_out)       cloud_out       = CloudXYZRGBNormalPtr (new CloudXYZRGBNormal ());
+//  if (!cloud_discarded) cloud_discarded = CloudXYZRGBNormalPtr (new CloudXYZRGBNormal ());
+
+//  const unsigned int width  = cloud_in->width;
+//  const unsigned int height = cloud_in->height;
+
+//  // Calculate the normals
+//  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+//  CloudNormalsPtr cloud_normals (new CloudNormals ());
+
+//  if(with_gpu == false){
+//      //Todo: only compute the normal when it is useful
+//      normal_estimation_->setInputCloud (cloud_in);
+//      normal_estimation_->compute (*cloud_normals);
+//      std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+//      std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
+
+
+//      // Get the XYZ and HSV masks.
+////      MatrixXb xyz_mask (height, width);
+////      MatrixXb hsv_mask (height, width);
+//      std::cout<<"width and height"<< width<<","<<height<<std::endl;
+//      MatrixXb xyz_mask (480, 640);
+//      MatrixXb hsv_mask (480, 640);
+
+//      // cm -> m for the comparison
+//      const float x_min = .01f * x_min_;
+//      const float x_max = .01f * x_max_;
+//      const float y_min = .01f * y_min_;
+//      const float y_max = .01f * y_max_;
+//      const float z_min = .01f * z_min_;
+//      const float z_max = .01f * z_max_;
+
+//      float h, s, v;
+//      for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
+//      {
+//          for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
+//          {
+//              const PointXYZRGBA& xyzrgb = (*cloud_in)      [r*width + c];
+//              const Normal&       normal = (*cloud_normals) [r*width + c];
+
+//              xyz_mask (r, c) = hsv_mask (r, c) = false;
+
+
+//              if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
+//                      xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
+//                      xyzrgb.y  >= y_min             && xyzrgb.y  <= y_max                    &&
+//                      xyzrgb.z  >= z_min             && xyzrgb.z  <= z_max)
+//              {
+//                  xyz_mask (r, c) = true;
+
+//                  //color as criteria, set mask is true if the point is in the range of hsv
+//                  //        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
+//                  //        if (h >= h_min_ && h <= h_max_ && s >= s_min_ && s <= s_max_ && v >= v_min_ && v <= v_max_)
+//                  //        {
+//                  //          if (!hsv_inverted_) hsv_mask (r, c) = true;
+//                  //        }
+//                  //        else
+//                  //        {
+//                  //          if (hsv_inverted_) hsv_mask (r, c) = true;
+//                  //        }
+
+//                  //only object in the scene
+//                  hsv_mask (r, c) = true;
+//              }
+//          }
+//      }
+//      std::chrono::steady_clock::time_point end2 = std::chrono::steady_clock::now();
+//      std::cout << "Time difference2 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end2 - begin).count()) /1000000.0  <<std::endl;
+
+////      this->erode  (xyz_mask, size_erode_);
+//      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
+//      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
+//      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
+//      else              hsv_mask.setZero ();
+
+//      // Copy the normals into the clouds.
+//      cloud_out->reserve (cloud_in->size ());
+//      cloud_discarded->reserve (cloud_in->size ());
+
+//      pcl::PointXYZRGBNormal pt_out, pt_discarded;
+//      pt_discarded.r = 50;
+//      pt_discarded.g = 50;
+//      pt_discarded.b = 230;
+
+//      PointXYZRGBA xyzrgb;
+//      Normal       normal;
+
+//      for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
+//      {
+//          for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
+//          {
+//              if (xyz_mask (r, c))
+//              {
+//                  xyzrgb = (*cloud_in)      [r*width + c];
+//                  normal = (*cloud_normals) [r*width + c];
+
+//                  // m -> cm
+//                  xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
+
+//                  //my current understanding: mask == true is to remove hand
+//                  if (hsv_mask (r, c))
+//                  {
+//                      pt_discarded.getVector4fMap ()       = xyzrgb.getVector4fMap ();
+//                      pt_discarded.getNormalVector4fMap () = normal.getNormalVector4fMap ();
+
+//                      pt_out.x = std::numeric_limits <float>::quiet_NaN ();
+//                  }
+//                  else
+//                  {
+//                      pt_out.getVector4fMap ()       = xyzrgb.getVector4fMap ();
+//                      pt_out.getNormalVector4fMap () = normal.getNormalVector4fMap ();
+//                      pt_out.rgba                    = xyzrgb.rgba;
+
+//                      pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
+//                  }
+//              }
+//              else
+//              {
+//                  pt_out.x       = std::numeric_limits <float>::quiet_NaN ();
+//                  pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
+//              }
+
+//              cloud_out->push_back       (pt_out);
+//              cloud_discarded->push_back (pt_discarded);
+//          }
+//      }
+
+//      cloud_out->width    = cloud_discarded->width    = width;
+//      cloud_out->height   = cloud_discarded->height   = height;
+//      cloud_out->is_dense = cloud_discarded->is_dense = false;
+
+//      return (true);
+//  }
+//  else{
+//    ne_withgpu.get_nv_gpu(cloud_in);
+//  }
+//}
+
+//////////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool
@@ -106,9 +266,11 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
   CloudNormalsPtr cloud_normals (new CloudNormals ());
 
   if(with_gpu == false){
+      //Todo: only compute the normal when it is useful
       normal_estimation_->setInputCloud (cloud_in);
       normal_estimation_->compute (*cloud_normals);
       std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+      std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
 
 
       // Get the XYZ and HSV masks.
@@ -123,6 +285,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
       const float z_min = .01f * z_min_;
       const float z_max = .01f * z_max_;
 
+
       float h, s, v;
       for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
       {
@@ -130,9 +293,6 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
           {
               const PointXYZRGBA& xyzrgb = (*cloud_in)      [r*width + c];
               const Normal&       normal = (*cloud_normals) [r*width + c];
-
-              xyz_mask (r, c) = hsv_mask (r, c) = false;
-
 
               if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
                       xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
@@ -155,17 +315,19 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                   //only object in the scene
                   hsv_mask (r, c) = true;
               }
+              else{
+                  xyz_mask (r, c) = false;
+                  hsv_mask (r, c) = false;
+              }
           }
       }
-      std::chrono::steady_clock::time_point end2 = std::chrono::steady_clock::now();
-      std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
-      std::cout << "Time difference2 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end2 - begin).count()) /1000000.0  <<std::endl;
 
-      this->erode  (xyz_mask, size_erode_);
-      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
-      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
-      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
-      else              hsv_mask.setZero ();
+
+//      this->erode  (xyz_mask, size_erode_);
+//      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
+//      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
+//      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
+//      else              hsv_mask.setZero ();
 
       // Copy the normals into the clouds.
       cloud_out->reserve (cloud_in->size ());
@@ -218,6 +380,8 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
               cloud_discarded->push_back (pt_discarded);
           }
       }
+      std::chrono::steady_clock::time_point end4 = std::chrono::steady_clock::now();
+      std::cout << "Time difference4 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end4 - begin).count()) /1000000.0  <<std::endl;
 
       cloud_out->width    = cloud_discarded->width    = width;
       cloud_out->height   = cloud_discarded->height   = height;
@@ -231,6 +395,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
 
 bool
 pcl::ihs::InputDataProcessing::calculateNormals (const CloudXYZRGBAConstPtr& cloud_in,
