@@ -296,15 +296,14 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
       pt_discarded.g = 50;
       pt_discarded.b = 230;
 
-      PointXYZRGBA xyzrgb;
-      Normal       normal;
-
       for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
       {
           for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
           {
               PointXYZRGBA xyzrgb = (*cloud_in)      [r*width + c];
               Normal       normal = (*cloud_normals) [r*width + c];
+              xyz_mask (r, c) = false;
+              hsv_mask (r, c) = false;
 
               if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
                       xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
@@ -325,7 +324,7 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
                   //        }
 
                   //only object in the scene
-                  hsv_mask (r, c) = true;
+//                  hsv_mask (r, c) = true;
 
                   // m -> cm
                   xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
@@ -338,10 +337,14 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
 
                       pt_out.x = std::numeric_limits <float>::quiet_NaN ();
                   }
+                  else{
+                      pt_out.getVector4fMap ()       = xyzrgb.getVector4fMap ();
+                      pt_out.getNormalVector4fMap () = normal.getNormalVector4fMap ();
+                      pt_out.rgba                    = xyzrgb.rgba;
+                      pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
+                  }
               }
               else{
-                  xyz_mask (r, c) = false;
-                  hsv_mask (r, c) = false;
                   pt_out.x       = std::numeric_limits <float>::quiet_NaN ();
                   pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
               }
