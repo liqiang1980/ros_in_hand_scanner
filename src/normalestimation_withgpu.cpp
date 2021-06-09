@@ -1,7 +1,7 @@
 #include "pcl/apps/in_hand_scanner/normalestimation_withgpu.h"
 
 
-void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud_ptr_xyzrgba) const{
+void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr& cloud_ptr_xyzrgba, pcl::PointCloud <pcl::Normal>& normal) const{
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
     customized_copyPointCloud(cloud_ptr_xyzrgba,cloud_ptr_xyz);
     pcl::gpu::NormalEstimation::PointCloud cloud_device;
@@ -23,17 +23,11 @@ void NormalEstimation_WITHGPU::get_nv_gpu(const pcl::PointCloud<pcl::PointXYZRGB
 
     for(size_t i = 0; i < downloaded.size(); ++i)
     {
-
         pcl::PointXYZ xyz = downloaded[i];
-        float curvature = xyz.data[3];
-
-//        float abs_error = 0.01f;
-//        ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
-//        ASSERT_NEAR(n.normal_y, xyz.y, abs_error);
-//        ASSERT_NEAR(n.normal_z, xyz.z, abs_error);
-
-//        float abs_error_curv = 0.01f;
-//        ASSERT_NEAR(n.curvature, curvature, abs_error_curv);
+//        float curvature = xyz.data[3];
+        normal[i].normal_x = xyz.x;
+        normal[i].normal_y = xyz.y;
+        normal[i].normal_z = xyz.z;
     }
 }
 

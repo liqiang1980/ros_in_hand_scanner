@@ -268,111 +268,110 @@ pcl::ihs::InputDataProcessing::segment (const CloudXYZRGBAConstPtr& cloud_in,
   if(with_gpu == false){
       //Todo: only compute the normal when it is useful
       normal_estimation_->setInputCloud (cloud_in);
-      normal_estimation_->compute (*cloud_normals);
-      std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
-      std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
+      normal_estimation_->compute (*cloud_normals);}
+  else{
+        ne_withgpu.get_nv_gpu(cloud_in, *cloud_normals);
+  }
+  std::chrono::steady_clock::time_point end1 = std::chrono::steady_clock::now();
+  std::cout << "Time difference1 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end1 - begin).count()) /1000000.0  <<std::endl;
 
 
-      // Get the XYZ and HSV masks.
-      MatrixXb xyz_mask (height, width);
-      MatrixXb hsv_mask (height, width);
+  // Get the XYZ and HSV masks.
+  MatrixXb xyz_mask (height, width);
+  MatrixXb hsv_mask (height, width);
 
-      // cm -> m for the comparison
-      const float x_min = .01f * x_min_;
-      const float x_max = .01f * x_max_;
-      const float y_min = .01f * y_min_;
-      const float y_max = .01f * y_max_;
-      const float z_min = .01f * z_min_;
-      const float z_max = .01f * z_max_;
+  // cm -> m for the comparison
+  const float x_min = .01f * x_min_;
+  const float x_max = .01f * x_max_;
+  const float y_min = .01f * y_min_;
+  const float y_max = .01f * y_max_;
+  const float z_min = .01f * z_min_;
+  const float z_max = .01f * z_max_;
 
 
-      float h, s, v;
+  float h, s, v;
 
-      // Copy the normals into the clouds.
-      cloud_out->reserve (cloud_in->size ());
-      cloud_discarded->reserve (cloud_in->size ());
-      pcl::PointXYZRGBNormal pt_out, pt_discarded;
-      pt_discarded.r = 50;
-      pt_discarded.g = 50;
-      pt_discarded.b = 230;
+  // Copy the normals into the clouds.
+  cloud_out->reserve (cloud_in->size ());
+  cloud_discarded->reserve (cloud_in->size ());
+  pcl::PointXYZRGBNormal pt_out, pt_discarded;
+  pt_discarded.r = 50;
+  pt_discarded.g = 50;
+  pt_discarded.b = 230;
 
-      for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
+  for (MatrixXb::Index r=0; r<xyz_mask.rows (); ++r)
+  {
+      for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
       {
-          for (MatrixXb::Index c=0; c<xyz_mask.cols (); ++c)
+          PointXYZRGBA xyzrgb = (*cloud_in)      [r*width + c];
+          Normal       normal = (*cloud_normals) [r*width + c];
+          xyz_mask (r, c) = false;
+          hsv_mask (r, c) = false;
+
+          if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
+                  xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
+                  xyzrgb.y  >= y_min             && xyzrgb.y  <= y_max                    &&
+                  xyzrgb.z  >= z_min             && xyzrgb.z  <= z_max)
           {
-              PointXYZRGBA xyzrgb = (*cloud_in)      [r*width + c];
-              Normal       normal = (*cloud_normals) [r*width + c];
-              xyz_mask (r, c) = false;
-              hsv_mask (r, c) = false;
+              xyz_mask (r, c) = true;
 
-              if (!boost::math::isnan (xyzrgb.x) && !boost::math::isnan (normal.normal_x) &&
-                      xyzrgb.x  >= x_min             && xyzrgb.x  <= x_max                    &&
-                      xyzrgb.y  >= y_min             && xyzrgb.y  <= y_max                    &&
-                      xyzrgb.z  >= z_min             && xyzrgb.z  <= z_max)
+              //color as criteria, set mask is true if the point is in the range of hsv
+              //        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
+              //        if (h >= h_min_ && h <= h_max_ && s >= s_min_ && s <= s_max_ && v >= v_min_ && v <= v_max_)
+              //        {
+              //          if (!hsv_inverted_) hsv_mask (r, c) = true;
+              //        }
+              //        else
+              //        {
+              //          if (hsv_inverted_) hsv_mask (r, c) = true;
+              //        }
+
+              //only object in the scene
+              //                  hsv_mask (r, c) = true;
+
+              // m -> cm
+              xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
+
+              //my current understanding: mask == true is to remove hand
+              if (hsv_mask (r, c))
               {
-                  xyz_mask (r, c) = true;
+                  pt_discarded.getVector4fMap ()       = xyzrgb.getVector4fMap ();
+                  pt_discarded.getNormalVector4fMap () = normal.getNormalVector4fMap ();
 
-                  //color as criteria, set mask is true if the point is in the range of hsv
-                  //        this->RGBToHSV (xyzrgb.r, xyzrgb.g, xyzrgb.b, h, s, v);
-                  //        if (h >= h_min_ && h <= h_max_ && s >= s_min_ && s <= s_max_ && v >= v_min_ && v <= v_max_)
-                  //        {
-                  //          if (!hsv_inverted_) hsv_mask (r, c) = true;
-                  //        }
-                  //        else
-                  //        {
-                  //          if (hsv_inverted_) hsv_mask (r, c) = true;
-                  //        }
-
-                  //only object in the scene
-//                  hsv_mask (r, c) = true;
-
-                  // m -> cm
-                  xyzrgb.getVector3fMap () = 100.f * xyzrgb.getVector3fMap ();
-
-                  //my current understanding: mask == true is to remove hand
-                  if (hsv_mask (r, c))
-                  {
-                      pt_discarded.getVector4fMap ()       = xyzrgb.getVector4fMap ();
-                      pt_discarded.getNormalVector4fMap () = normal.getNormalVector4fMap ();
-
-                      pt_out.x = std::numeric_limits <float>::quiet_NaN ();
-                  }
-                  else{
-                      pt_out.getVector4fMap ()       = xyzrgb.getVector4fMap ();
-                      pt_out.getNormalVector4fMap () = normal.getNormalVector4fMap ();
-                      pt_out.rgba                    = xyzrgb.rgba;
-                      pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
-                  }
+                  pt_out.x = std::numeric_limits <float>::quiet_NaN ();
               }
               else{
-                  pt_out.x       = std::numeric_limits <float>::quiet_NaN ();
+                  pt_out.getVector4fMap ()       = xyzrgb.getVector4fMap ();
+                  pt_out.getNormalVector4fMap () = normal.getNormalVector4fMap ();
+                  pt_out.rgba                    = xyzrgb.rgba;
                   pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
               }
-              cloud_out->push_back       (pt_out);
-              cloud_discarded->push_back (pt_discarded);
           }
+          else{
+              pt_out.x       = std::numeric_limits <float>::quiet_NaN ();
+              pt_discarded.x = std::numeric_limits <float>::quiet_NaN ();
+          }
+          cloud_out->push_back       (pt_out);
+          cloud_discarded->push_back (pt_discarded);
       }
-
-
-//      this->erode  (xyz_mask, size_erode_);
-//      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
-//      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
-//      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
-//      else              hsv_mask.setZero ();
-
-
-      std::chrono::steady_clock::time_point end4 = std::chrono::steady_clock::now();
-      std::cout << "Time difference4 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end4 - begin).count()) /1000000.0  <<std::endl;
-
-      cloud_out->width    = cloud_discarded->width    = width;
-      cloud_out->height   = cloud_discarded->height   = height;
-      cloud_out->is_dense = cloud_discarded->is_dense = false;
-
-      return (true);
   }
-  else{
-    ne_withgpu.get_nv_gpu(cloud_in);
-  }
+
+
+  //      this->erode  (xyz_mask, size_erode_);
+  //      std::chrono::steady_clock::time_point end3 = std::chrono::steady_clock::now();
+  //      std::cout << "Time difference3 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end3 - begin).count()) /1000000.0  <<std::endl;
+  //      if (hsv_enabled_) this->dilate (hsv_mask, size_dilate_);
+  //      else              hsv_mask.setZero ();
+
+
+  std::chrono::steady_clock::time_point end4 = std::chrono::steady_clock::now();
+  std::cout << "Time difference4 (sec) = " <<  (std::chrono::duration_cast<std::chrono::microseconds>(end4 - begin).count()) /1000000.0  <<std::endl;
+
+  cloud_out->width    = cloud_discarded->width    = width;
+  cloud_out->height   = cloud_discarded->height   = height;
+  cloud_out->is_dense = cloud_discarded->is_dense = false;
+
+  return (true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
