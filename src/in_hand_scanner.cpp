@@ -336,7 +336,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
   {
       //cloud_discarded is hand
       //cloud_data is object
-    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded,false))
+    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded,true))
       return;
   }
 
