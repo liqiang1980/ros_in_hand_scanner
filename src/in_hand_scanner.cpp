@@ -113,6 +113,9 @@ pcl::ihs::InHandScanner::InHandScanner (bool is_c, std::string t_name, Base* par
 
   cloud_ptr_xyzrgba.reset(new pcl::PointCloud<pcl::PointXYZRGBA>());
   cloud_ptr_xyz.reset(new pcl::PointCloud<pcl::PointXYZ>());
+  cloud_ptr_xyz->width = 250;
+  cloud_ptr_xyz->height = 200;
+  cloud_ptr_xyz_pre.reset(new pcl::PointCloud<pcl::PointXYZ>());
   cloud_ptr_xyzrgb.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
 }
 
@@ -336,7 +339,7 @@ pcl::ihs::InHandScanner::newDataCallback (const CloudXYZRGBAConstPtr& cloud_in)
   {
       //cloud_discarded is hand
       //cloud_data is object
-    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded,true))
+    if (!input_data_processing_->segment (cloud_in, cloud_data, cloud_discarded,false))
       return;
   }
 
@@ -514,7 +517,13 @@ void pcl::ihs::InHandScanner::grab_pc(const sensor_msgs::PointCloud2::ConstPtr &
 
     pcl_conversions::toPCL(*msg,pcl_pc2);
     if(is_colored == false){
-        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyz);
+        pcl::fromPCLPointCloud2(pcl_pc2,*cloud_ptr_xyz_pre);
+        cloud_ptr_xyz->points.resize(cloud_ptr_xyz->width * cloud_ptr_xyz->height);
+        for( size_t i = 0; i < cloud_ptr_xyz->width; i++){
+            for( size_t j = 0; j < cloud_ptr_xyz->height;  j++){
+              cloud_ptr_xyz->at(i, j) = cloud_ptr_xyz_pre->at(160+i,140+j ); //at(column, row)
+            }
+        }
         pcl::copyPointCloud(*cloud_ptr_xyz,*cloud_ptr_xyzrgba);
     }
     else{

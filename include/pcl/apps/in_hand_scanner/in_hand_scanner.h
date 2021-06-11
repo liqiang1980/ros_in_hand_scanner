@@ -224,7 +224,7 @@ namespace pcl
 
         pcl::PCLPointCloud2 pcl_pc2;
         pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr_xyzrgba;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz;
+        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_ptr_xyz_pre, cloud_ptr_xyz;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_ptr_xyzrgb;
         bool is_colored;
         std::string topic_name;
